@@ -19,6 +19,13 @@ body{font-family:'Hind Siliguri',sans-serif;background:var(--bg);color:var(--tex
 .dot{width:6px;height:6px;background:var(--success);border-radius:50%;animation:pulse 2s infinite;}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .client-count{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:11px;color:var(--text-muted);}
+#setupBar{background:#0f172a;border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.setup-label{font-size:11px;color:var(--text-dim);white-space:nowrap;}
+.setup-input{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text);font-size:11px;outline:none;}
+.setup-input:focus{border-color:var(--accent);}
+.setup-input::placeholder{color:var(--text-dim);}
+.save-btn{background:var(--accent);border:none;border-radius:8px;padding:6px 16px;color:#fff;font-family:'Hind Siliguri',sans-serif;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;}
+.save-btn:hover{background:#2563eb;}
 .quick-bar{padding:8px 20px;display:flex;gap:7px;flex-wrap:wrap;border-bottom:1px solid var(--border);background:var(--bg);flex-shrink:0;}
 .ql{font-size:11px;color:var(--text-dim);align-self:center;white-space:nowrap;}
 .chip{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px 11px;font-size:12px;color:var(--text-muted);cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .2s;}
@@ -69,6 +76,13 @@ body{font-family:'Hind Siliguri',sans-serif;background:var(--bg);color:var(--tex
     <div class="status-pill"><div class="dot"></div>অনলাইন</div>
   </div>
 </div>
+
+<div id="setupBar">
+  <span class="setup-label">Script URL:</span>
+  <input type="text" class="setup-input" id="scriptInput" placeholder="https://script.google.com/macros/s/XXXX/exec">
+  <button class="save-btn" onclick="saveURL()">💾 সেভ করুন</button>
+</div>
+
 <div class="quick-bar">
   <span class="ql">দ্রুত:</span>
   <button class="chip" onclick="q('কার কার ডাউনপেমেন্ট বাকি আছে?')">💰 ডাউনপেমেন্ট বাকি</button>
@@ -77,6 +91,7 @@ body{font-family:'Hind Siliguri',sans-serif;background:var(--bg);color:var(--tex
   <button class="chip" onclick="q('সর্বশেষ বুকিং হওয়া ক্লায়েন্ট কে?')">🆕 নতুন বুকিং</button>
   <button class="chip" onclick="q('মোট কতজন ক্লায়েন্ট আছেন?')">📊 সারসংক্ষেপ</button>
 </div>
+
 <div class="chat-area" id="chatArea">
   <div class="welcome" id="welcomeMsg">
     <div class="welcome-icon">🏡</div>
@@ -84,22 +99,105 @@ body{font-family:'Hind Siliguri',sans-serif;background:var(--bg);color:var(--tex
     <p>Western Valley-এর ক্লায়েন্ট ডাটাবেজ থেকে যেকোনো তথ্য জানতে নিচে প্রশ্ন করুন।</p>
   </div>
 </div>
+
 <div class="input-area">
   <textarea class="input-box" id="userInput" placeholder="যেমন: Asma Akter এর প্লট কোনটি?" rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
   <button class="send-btn" id="sendBtn" onclick="send()">➤</button>
 </div>
+
 <script>
-const API='https://script.google.com/macros/s/AKfycbxHGhySb98G3Gcl-RWlqZPK3L3oX1kdNftRYJnv92sQus_ndU0irS6DnJkQg2s-8pgi/exec';
-let loading=false;
-window.onload=async()=>{try{const r=await fetch(API);const d=await r.json();if(d.total)document.getElementById('clientCount').textContent=d.total+' জন ক্লায়েন্ট';}catch(e){document.getElementById('clientCount').textContent='সংযোগ সমস্যা';}};
-function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px';}
-function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}}
-function q(t){document.getElementById('userInput').value=t;send();}
-function now(){return new Date().toLocaleTimeString('bn-BD',{hour:'2-digit',minute:'2-digit'});}
-function addMsg(role,text){const chat=document.getElementById('chatArea');const d=document.createElement('div');d.className='msg '+role;const av=role==='bot'?'🤖':'👤';if(role==='bot'){d.innerHTML=`<div class="av bot">${av}</div><div><div class="bubble">${text}</div><div class="ts">${now()}</div></div>`;}else{d.innerHTML=`<div><div class="bubble">${text}</div><div class="ts">${now()}</div></div><div class="av user">${av}</div>`;}chat.appendChild(d);chat.scrollTop=chat.scrollHeight;}
-function showTyping(){const chat=document.getElementById('chatArea');const d=document.createElement('div');d.className='msg bot';d.id='typing';d.innerHTML=`<div class="av bot">🤖</div><div class="typing-bubble"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div>`;chat.appendChild(d);chat.scrollTop=chat.scrollHeight;}
-function removeTyping(){const el=document.getElementById('typing');if(el)el.remove();}
-async function send(){if(loading)return;const input=document.getElementById('userInput');const question=input.value.trim();if(!question)return;const wl=document.getElementById('welcomeMsg');if(wl)wl.remove();loading=true;document.getElementById('sendBtn').disabled=true;input.value='';input.style.height='auto';addMsg('user',question);showTyping();try{const url=API+'?q='+encodeURIComponent(question);const res=await fetch(url);const data=await res.json();removeTyping();if(data.total)document.getElementById('clientCount').textContent=data.total+' জন ক্লায়েন্ট';const answer=(data.answer||'উত্তর পাওয়া যায়নি।').replace(/\n/g,'<br>');addMsg('bot',data.success?answer:'❌ '+answer);}catch(e){removeTyping();addMsg('bot','❌ সংযোগ সমস্যা।<br><small>'+e.message+'</small>');}loading=false;document.getElementById('sendBtn').disabled=false;input.focus();}
+let apiUrl = localStorage.getItem('plotbot_url') || '';
+let loading = false;
+
+window.onload = async () => {
+  if (apiUrl) {
+    // URL আছে — বক্স hide করো
+    document.getElementById('setupBar').style.display = 'none';
+    loadClientCount();
+  }
+  // URL নেই — বক্স দেখাও
+};
+
+function saveURL() {
+  const url = document.getElementById('scriptInput').value.trim();
+  if (!url) { alert('URL দিন!'); return; }
+  localStorage.setItem('plotbot_url', url);
+  apiUrl = url;
+  // সেভ হলে সাথে সাথে hide
+  document.getElementById('setupBar').style.display = 'none';
+  loadClientCount();
+  addMsg('bot', '✅ সেটআপ সম্পন্ন! এখন প্রশ্ন করুন।');
+}
+
+async function loadClientCount() {
+  try {
+    const res = await fetch(apiUrl);
+    const data = await res.json();
+    if (data.total) document.getElementById('clientCount').textContent = data.total + ' জন ক্লায়েন্ট';
+  } catch(e) {
+    document.getElementById('clientCount').textContent = 'সংযোগ সমস্যা';
+  }
+}
+
+function autoResize(el) { el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,120)+'px'; }
+function handleKey(e) { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();} }
+function q(t) { document.getElementById('userInput').value=t; send(); }
+function now() { return new Date().toLocaleTimeString('bn-BD',{hour:'2-digit',minute:'2-digit'}); }
+
+function addMsg(role, text) {
+  const chat = document.getElementById('chatArea');
+  const d = document.createElement('div');
+  d.className = 'msg ' + role;
+  const av = role==='bot' ? '🤖' : '👤';
+  if (role==='bot') {
+    d.innerHTML = `<div class="av bot">${av}</div><div><div class="bubble">${text}</div><div class="ts">${now()}</div></div>`;
+  } else {
+    d.innerHTML = `<div><div class="bubble">${text}</div><div class="ts">${now()}</div></div><div class="av user">${av}</div>`;
+  }
+  chat.appendChild(d);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function showTyping() {
+  const chat = document.getElementById('chatArea');
+  const d = document.createElement('div');
+  d.className='msg bot'; d.id='typing';
+  d.innerHTML=`<div class="av bot">🤖</div><div class="typing-bubble"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div>`;
+  chat.appendChild(d);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function removeTyping() { const el=document.getElementById('typing'); if(el)el.remove(); }
+
+async function send() {
+  if (loading) return;
+  const input = document.getElementById('userInput');
+  const question = input.value.trim();
+  if (!question) return;
+  if (!apiUrl) { addMsg('bot','⚠️ আগে উপরে Script URL বসিয়ে সেভ করুন।'); return; }
+  const wl = document.getElementById('welcomeMsg');
+  if (wl) wl.remove();
+  loading = true;
+  document.getElementById('sendBtn').disabled = true;
+  input.value = ''; input.style.height = 'auto';
+  addMsg('user', question);
+  showTyping();
+  try {
+    const url = apiUrl + '?q=' + encodeURIComponent(question);
+    const res = await fetch(url);
+    const data = await res.json();
+    removeTyping();
+    if (data.total) document.getElementById('clientCount').textContent = data.total + ' জন ক্লায়েন্ট';
+    const answer = (data.answer||'উত্তর পাওয়া যায়নি।').replace(/\n/g,'<br>');
+    addMsg('bot', data.success ? answer : '❌ '+answer);
+  } catch(e) {
+    removeTyping();
+    addMsg('bot','❌ সংযোগ সমস্যা।<br><small>'+e.message+'</small>');
+  }
+  loading = false;
+  document.getElementById('sendBtn').disabled = false;
+  input.focus();
+}
 </script>
 </body>
 </html>
