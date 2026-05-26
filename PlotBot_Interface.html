@@ -79,4 +79,27 @@ body{font-family:'Hind Siliguri',sans-serif;background:var(--bg);color:var(--tex
 </div>
 <div class="chat-area" id="chatArea">
   <div class="welcome" id="welcomeMsg">
-    <div class="welcome-icon">🏡</div
+    <div class="welcome-icon">🏡</div>
+    <h2>স্বাগতম PlotBot-এ</h2>
+    <p>Western Valley-এর ক্লায়েন্ট ডাটাবেজ থেকে যেকোনো তথ্য জানতে নিচে প্রশ্ন করুন।</p>
+  </div>
+</div>
+<div class="input-area">
+  <textarea class="input-box" id="userInput" placeholder="যেমন: Asma Akter এর প্লট কোনটি?" rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+  <button class="send-btn" id="sendBtn" onclick="send()">➤</button>
+</div>
+<script>
+const API='https://script.google.com/macros/s/AKfycbxHGhySb98G3Gcl-RWlqZPK3L3oX1kdNftRYJnv92sQus_ndU0irS6DnJkQg2s-8pgi/exec';
+let loading=false;
+window.onload=async()=>{try{const r=await fetch(API);const d=await r.json();if(d.total)document.getElementById('clientCount').textContent=d.total+' জন ক্লায়েন্ট';}catch(e){document.getElementById('clientCount').textContent='সংযোগ সমস্যা';}};
+function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px';}
+function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}}
+function q(t){document.getElementById('userInput').value=t;send();}
+function now(){return new Date().toLocaleTimeString('bn-BD',{hour:'2-digit',minute:'2-digit'});}
+function addMsg(role,text){const chat=document.getElementById('chatArea');const d=document.createElement('div');d.className='msg '+role;const av=role==='bot'?'🤖':'👤';if(role==='bot'){d.innerHTML=`<div class="av bot">${av}</div><div><div class="bubble">${text}</div><div class="ts">${now()}</div></div>`;}else{d.innerHTML=`<div><div class="bubble">${text}</div><div class="ts">${now()}</div></div><div class="av user">${av}</div>`;}chat.appendChild(d);chat.scrollTop=chat.scrollHeight;}
+function showTyping(){const chat=document.getElementById('chatArea');const d=document.createElement('div');d.className='msg bot';d.id='typing';d.innerHTML=`<div class="av bot">🤖</div><div class="typing-bubble"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div>`;chat.appendChild(d);chat.scrollTop=chat.scrollHeight;}
+function removeTyping(){const el=document.getElementById('typing');if(el)el.remove();}
+async function send(){if(loading)return;const input=document.getElementById('userInput');const question=input.value.trim();if(!question)return;const wl=document.getElementById('welcomeMsg');if(wl)wl.remove();loading=true;document.getElementById('sendBtn').disabled=true;input.value='';input.style.height='auto';addMsg('user',question);showTyping();try{const url=API+'?q='+encodeURIComponent(question);const res=await fetch(url);const data=await res.json();removeTyping();if(data.total)document.getElementById('clientCount').textContent=data.total+' জন ক্লায়েন্ট';const answer=(data.answer||'উত্তর পাওয়া যায়নি।').replace(/\n/g,'<br>');addMsg('bot',data.success?answer:'❌ '+answer);}catch(e){removeTyping();addMsg('bot','❌ সংযোগ সমস্যা।<br><small>'+e.message+'</small>');}loading=false;document.getElementById('sendBtn').disabled=false;input.focus();}
+</script>
+</body>
+</html>
