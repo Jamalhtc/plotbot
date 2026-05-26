@@ -106,7 +106,7 @@
   </div>
 </div>
 
-<div class="setup-bar">
+<div class="setup-bar" style="display:none">
   <span class="setup-label">Script URL:</span>
   <input type="text" class="setup-input" id="scriptUrl" placeholder="https://script.google.com/macros/s/XXXX/exec">
   <button class="save-btn" onclick="saveConfig()">💾 সেভ</button>
@@ -145,9 +145,9 @@
 
 <script>
   let loading = false;
-  let apiUrl  = localStorage.getItem('wv_script_url') || '';
+  let apiUrl = 'https://script.google.com/macros/s/AKfycbxHGhySb98G3Gcl-RWlqZPK3L3oX1kdNftRYJnv92sQus_ndU0irS6DnJkQg2s-8pgi/exec';
 
-  window.onload = () => {
+  window.onload = () => { testConnection();
     if (apiUrl) document.getElementById('scriptUrl').value = apiUrl;
   };
 
